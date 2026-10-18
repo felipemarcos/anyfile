@@ -1,9 +1,11 @@
 import AppKit
+import Speech
 import SwiftUI
 
 struct SettingsView: View {
     @Environment(ConversionQueue.self) private var queue
     @Environment(AppSettings.self) private var settings
+    @State private var transcriptionLocales: [String] = []
 
     var body: some View {
         @Bindable var settings = settings
@@ -64,6 +66,42 @@ struct SettingsView: View {
                 }
                 Toggle("Recognize scanned pages when extracting text from PDFs", isOn: $settings.ocrScannedPages)
                 Text("Convert a PDF or image to \u{201C}Searchable PDF (OCR)\u{201D} to make its text selectable and searchable. Recognition runs on this Mac with Apple\u{2019}s Vision framework.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section("Vectorize (image → SVG)") {
+                Picker("Colors", selection: $settings.vectorizeColors) {
+                    Text("Automatic").tag(0)
+                    ForEach([2, 4, 8, 16, 32], id: \.self) { Text("\($0)").tag($0) }
+                }
+                Picker("Outlines", selection: $settings.vectorizeTolerance) {
+                    Text("Precise").tag(0.5)
+                    Text("Balanced").tag(1.0)
+                    Text("Smooth").tag(2.0)
+                }
+                Text("Best for logos, icons and flat artwork. Automatic finds the image\u{2019}s own palette; gradients come out as bands, so try 32 colors for them.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section("Background removal") {
+                Toggle("Crop to the subject", isOn: $settings.cropCutoutToSubject)
+                Text("\u{201C}PNG (background removed)\u{201D} keeps the subject on a transparent background, using the same on-device model as Photos.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section("Transcription") {
+                Picker("Language", selection: $settings.transcriptionLocale) {
+                    Text("System (\(Locale.current.localizedString(forIdentifier: Locale.current.identifier) ?? Locale.current.identifier))").tag(String?.none)
+                    Divider()
+                    ForEach(transcriptionLocales, id: \.self) { code in
+                        Text(Locale.current.localizedString(forIdentifier: code) ?? code).tag(Optional(code))
+                    }
+                }
+                .task { await loadTranscriptionLocales() }
+                Text("Audio and video become text or subtitles (SRT, WebVTT) on this Mac. The first time you use a language, macOS downloads its speech model.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -142,6 +180,21 @@ struct SettingsView: View {
         TextRecognizer.supportedLanguages
             .map { (code: $0, name: Locale.current.localizedString(forIdentifier: $0) ?? $0) }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    private func loadTranscriptionLocales() async {
+        guard transcriptionLocales.isEmpty else { return }
+        var codes: [String]
+        if #available(macOS 26, *) {
+            codes = await SpeechTranscriber.supportedLocales.map { $0.identifier(.bcp47) }
+        } else {
+            codes = SFSpeechRecognizer.supportedLocales().map(\.identifier)
+        }
+        codes = Array(Set(codes))
+        transcriptionLocales = codes.sorted {
+            (Locale.current.localizedString(forIdentifier: $0) ?? $0)
+                .localizedCaseInsensitiveCompare(Locale.current.localizedString(forIdentifier: $1) ?? $1) == .orderedAscending
+        }
     }
 
     private var mupdfStatus: String {

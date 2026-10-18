@@ -15,6 +15,12 @@ struct ConversionOptions: Sendable {
     var ocrLanguage: String? = nil
     /// When extracting text from PDFs, OCR pages that have no text layer.
     var ocrScannedPages: Bool = true
+    /// Raster → SVG tracing settings.
+    var vectorize = Vectorizer.Settings()
+    /// Background removal: crop the result to the subject instead of keeping the full canvas.
+    var cropCutoutToSubject: Bool = false
+    /// Speech-to-text locale (BCP 47); nil = the system language.
+    var transcriptionLocale: String? = nil
 }
 
 typealias ProgressHandler = @Sendable (Double) -> Void

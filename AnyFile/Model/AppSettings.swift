@@ -36,6 +36,24 @@ final class AppSettings {
         didSet { defaults.set(ocrScannedPages, forKey: Keys.ocrScannedPages) }
     }
 
+    /// Vectorize: palette size (0 = automatic) and outline smoothing tolerance in pixels.
+    var vectorizeColors: Int {
+        didSet { defaults.set(vectorizeColors, forKey: Keys.vectorizeColors) }
+    }
+
+    var vectorizeTolerance: Double {
+        didSet { defaults.set(vectorizeTolerance, forKey: Keys.vectorizeTolerance) }
+    }
+
+    var cropCutoutToSubject: Bool {
+        didSet { defaults.set(cropCutoutToSubject, forKey: Keys.cropCutoutToSubject) }
+    }
+
+    /// Speech-to-text locale, or nil for the system language.
+    var transcriptionLocale: String? {
+        didSet { defaults.set(transcriptionLocale, forKey: Keys.transcriptionLocale) }
+    }
+
     var allSheets: Bool {
         didSet { defaults.set(allSheets, forKey: Keys.allSheets) }
     }
@@ -59,11 +77,17 @@ final class AppSettings {
         renderDPI = defaults.object(forKey: Keys.renderDPI) as? Double ?? 144
         ffmpegPath = defaults.string(forKey: Keys.ffmpegPath)
         optimizeSVG = defaults.object(forKey: Keys.optimizeSVG) as? Bool ?? true
+        vectorizeColors = defaults.integer(forKey: Keys.vectorizeColors)
+        vectorizeTolerance = defaults.object(forKey: Keys.vectorizeTolerance) as? Double ?? 1.0
+        cropCutoutToSubject = defaults.bool(forKey: Keys.cropCutoutToSubject)
+        transcriptionLocale = defaults.string(forKey: Keys.transcriptionLocale)
     }
 
     var options: ConversionOptions {
         ConversionOptions(imageQuality: imageQuality, renderDPI: renderDPI, allSheets: allSheets, optimizeSVG: optimizeSVG,
-                          ocrLanguage: ocrLanguage, ocrScannedPages: ocrScannedPages)
+                          ocrLanguage: ocrLanguage, ocrScannedPages: ocrScannedPages,
+                          vectorize: .init(colors: vectorizeColors > 0 ? vectorizeColors : nil, tolerance: vectorizeTolerance),
+                          cropCutoutToSubject: cropCutoutToSubject, transcriptionLocale: transcriptionLocale)
     }
 
     private enum Keys {
@@ -75,5 +99,9 @@ final class AppSettings {
         static let renderDPI = "renderDPI"
         static let ffmpegPath = "ffmpegPath"
         static let optimizeSVG = "optimizeSVG"
+        static let vectorizeColors = "vectorizeColors"
+        static let vectorizeTolerance = "vectorizeTolerance"
+        static let cropCutoutToSubject = "cropCutoutToSubject"
+        static let transcriptionLocale = "transcriptionLocale"
     }
 }

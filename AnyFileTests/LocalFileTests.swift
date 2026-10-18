@@ -14,6 +14,22 @@ struct LocalFileTests {
         try FileManager.default.createDirectory(at: outDir, withIntermediateDirectories: true)
         let source = try #require(FileFormat.detect(input))
         let registry = ConverterRegistry.standard()
+
+        // TEST_RUNNER_ANYFILE_TARGET=<format raw value> converts once to that format instead.
+        if let raw = env["ANYFILE_TARGET"] {
+            let target = try #require(FileFormat(rawValue: raw), "unknown format \(raw)")
+            let converter = try #require(registry.converter(from: source, to: target), "no \(source) → \(target) converter")
+            var options = ConversionOptions()
+            if let colors = env["ANYFILE_COLORS"].flatMap(Int.init) { options.vectorize.colors = colors }
+            if let locale = env["ANYFILE_LOCALE"] { options.transcriptionLocale = locale }
+            let output = outDir.appendingPathComponent(input.deletingPathExtension().lastPathComponent + target.outputNameSuffix + "." + target.fileExtension)
+            try? FileManager.default.removeItem(at: output)
+            let start = Date()
+            let written = try await converter.convert(input, from: source, to: target, output: output, options: options, progress: { _ in })
+            let size = try FileManager.default.attributesOfItem(atPath: written.path)[.size] as? Int ?? 0
+            print("ANYFILE \(raw) \(size) bytes in \(String(format: "%.2f", Date().timeIntervalSince(start)))s -> \(written.path)")
+            return
+        }
         let converter = try #require(registry.converter(from: source, to: .svg))
 
         for optimize in [false, true] {

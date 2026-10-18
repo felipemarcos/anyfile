@@ -19,7 +19,15 @@ Drop files on the window (or the Dock icon, or use **Open With → AnyFile**), p
 | SVG | PNG, JPEG, HEIC, TIFF, GIF, BMP, PDF (vector) | macOS (CoreSVG) |
 | PDF, Illustrator, images | Searchable PDF (OCR) | Vision |
 | Images | TXT (OCR) | Vision |
+| Images | PNG (background removed) | Vision |
+| Images (logos, flat art) | SVG (vectorized) | built in + SVGO |
+| Audio, video | TXT, SRT, WebVTT (transcript) | Speech |
 | CSV ↔ JSON ↔ Excel (XLSX), JSON ↔ plist | | built in (+ ZIPFoundation) |
+
+**On-device AI** (nothing is uploaded):
+- *Background removal* keeps the subject on a transparent PNG, using the same Vision model as "Copy Subject" in Photos. Optionally crop to the subject.
+- *Vectorize* traces logos, icons and flat artwork into SVG: a k-means palette in Oklab (automatic mode keeps the image's own colors), anti-aliasing cleanup, stacked color layers so edges never show gaps, Vision contour tracing and Bézier smoothing, then SVGO. Gradients become bands; use 32 colors for them.
+- *Transcripts and subtitles* turn speech into text or SRT/WebVTT cues (two lines of up to 42 characters, at most 6 seconds, broken at sentences and pauses) with SpeechAnalyzer on macOS 26+, or on-device SFSpeechRecognizer before that. The first use of a language downloads its speech model.
 
 **OCR**: "Searchable PDF (OCR)" keeps every page exactly as it looks and adds an invisible text layer, so scans can be selected, copied, searched and found by Spotlight; pages that already have text are left alone, and the result is saved as `name (OCR).pdf`. PDF → TXT also recognizes scanned pages. Recognition runs on-device with Apple's Vision framework; pick a language in Settings or leave it on Automatic. Rebuilt PDFs keep their pages, title and author, but not links, bookmarks or form fields.
 

@@ -14,6 +14,8 @@ struct ConverterRegistry: Sendable {
             PDFConverter(),
             DataConverter(),
             OCRConverter(),
+            BackgroundRemover(),
+            VectorizeConverter(),
         ]
         if let mutool {
             converters.append(MuPDFConverter(executable: mutool))
@@ -21,6 +23,7 @@ struct ConverterRegistry: Sendable {
         if let ffmpeg {
             converters.append(FFmpegConverter(executable: ffmpeg))
         }
+        converters.append(TranscriptConverter(ffmpeg: ffmpeg))
         return ConverterRegistry(converters: converters)
     }
 
