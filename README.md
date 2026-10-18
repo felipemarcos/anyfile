@@ -14,11 +14,12 @@ Drop files on the window (or the Dock icon, or use **Open With → AnyFile**), p
 | TXT, RTF, DOCX, HTML, ODT, Markdown | TXT, RTF, DOCX, HTML, ODT, PDF | NSAttributedString |
 | PDF | PNG, JPEG, TIFF (one file per page), TXT | PDFKit |
 | PDF, Illustrator (.ai) | SVG (one per page, text as outlines) | MuPDF |
+| PDF, Illustrator (.ai) | HTML (one file, page layout kept, images embedded) | MuPDF |
 | Illustrator (.ai) | PDF, PNG, JPEG, TIFF, TXT | PDFKit |
 | SVG | PNG, PDF | MuPDF |
 | CSV ↔ JSON ↔ Excel (XLSX), JSON ↔ plist | | built in (+ ZIPFoundation) |
 
-Illustrator files need Illustrator's default "Create PDF Compatible File" option; older PostScript-based .ai files are rejected with an explanation.
+PDF → HTML keeps each page's layout (positioned text, colors, embedded images) rather than producing reflowable text; bold and italic are restored from MuPDF's structured text, since its HTML writer drops them. Illustrator files need Illustrator's default "Create PDF Compatible File" option; older PostScript-based .ai files are rejected with an explanation.
 
 Data notes: JSON key order becomes column order; CSV columns are typed only when every value converts losslessly (so `01234` stays a string); Excel dates become ISO 8601 strings; legacy `.xls` isn't supported.
 

@@ -16,13 +16,13 @@ enum MuPDFLocator {
     }
 }
 
-/// Vector conversion with MuPDF's mutool: PDF/Illustrator → SVG, and SVG → PNG/PDF.
+/// Conversion with MuPDF's mutool: PDF/Illustrator → SVG or HTML, and SVG → PNG/PDF.
 struct MuPDFConverter: Converter {
     let executable: URL
 
     func targets(for input: FileFormat) -> [FileFormat] {
         switch input {
-        case .pdf, .ai: [.svg]
+        case .pdf, .ai: [.svg, .html]
         case .svg: [.png, .pdf]
         default: []
         }
@@ -36,6 +36,8 @@ struct MuPDFConverter: Converter {
             try await run(["convert", "-o", output.path, input.path])
         case (.pdf, .svg), (.ai, .svg):
             return try await writeSVG(input, from: source, output: output, progress: progress)
+        case (.pdf, .html), (.ai, .html):
+            try await writeHTML(input, from: source, output: output, progress: progress)
         default:
             throw ConversionError("MuPDF can't convert \(source.displayName) to \(target.displayName).")
         }
@@ -75,6 +77,32 @@ struct MuPDFConverter: Converter {
             throw error
         }
         return folder
+    }
+
+    /// One HTML file with every page laid out as in the PDF (positioned text, embedded images),
+    /// with bold and italic restored from MuPDF's structured-text output.
+    private func writeHTML(_ input: URL, from source: FileFormat, output: URL, progress: @escaping ProgressHandler) async throws {
+        guard PDFDocument(url: input) != nil else {
+            throw ConversionError(source == .ai
+                ? "This Illustrator file was saved without PDF compatibility. Re-save it in Illustrator with \"Create PDF Compatible File\" on."
+                : "Couldn't open the PDF.")
+        }
+        let work = FileManager.default.temporaryDirectory.appendingPathComponent("AnyFile-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: work, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: work) }
+
+        let html = work.appendingPathComponent("page.html")
+        let stext = work.appendingPathComponent("page.json")
+        try await run(["draw", "-q", "-F", "html", "-O", "preserve-images", "-o", html.path, input.path])
+        progress(0.5)
+        try await run(["draw", "-q", "-F", "stext.json", "-o", stext.path, input.path])
+        progress(0.8)
+
+        let fixed = HTMLPageFixer.fix(
+            html: try String(contentsOf: html, encoding: .utf8),
+            stextJSON: try Data(contentsOf: stext),
+            title: input.deletingPathExtension().lastPathComponent)
+        try Data(fixed.utf8).write(to: output, options: .atomic)
     }
 
     private func run(_ arguments: [String]) async throws {

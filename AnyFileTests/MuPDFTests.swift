@@ -89,10 +89,47 @@ struct MuPDFTests {
         #expect(PDFDocument(url: pdf)?.pageCount == 1)
     }
 
+    @Test func pdfToHTMLKeepsLayoutBoldAndImages() async throws {
+        let url = dir.appendingPathComponent("styled.pdf")
+        var box = CGRect(x: 0, y: 0, width: 400, height: 300)
+        let ctx = try #require(CGContext(url as CFURL, mediaBox: &box, nil))
+        ctx.beginPDFPage(nil)
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(cgContext: ctx, flipped: false)
+        let text = NSMutableAttributedString(string: "Plain ", attributes: [.font: NSFont(name: "Helvetica", size: 18)!])
+        text.append(NSAttributedString(string: "Strong", attributes: [.font: NSFont(name: "Helvetica-Bold", size: 18)!]))
+        text.append(NSAttributedString(string: " & <tail>", attributes: [.font: NSFont(name: "Times-Italic", size: 18)!]))
+        text.draw(at: CGPoint(x: 40, y: 240))
+        NSGraphicsContext.restoreGraphicsState()
+        let pixel = try #require(CGContext(data: nil, width: 8, height: 8, bitsPerComponent: 8, bytesPerRow: 0,
+                                           space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                                           bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+        pixel.setFillColor(CGColor(srgbRed: 1, green: 0, blue: 0, alpha: 1))
+        pixel.fill(CGRect(x: 0, y: 0, width: 8, height: 8))
+        ctx.draw(pixel.makeImage()!, in: CGRect(x: 40, y: 40, width: 80, height: 80))
+        ctx.endPDFPage()
+        ctx.closePDF()
+
+        let out = dir.appendingPathComponent("styled.html")
+        _ = try await converter.convert(url, from: .pdf, to: .html, output: out, options: .init(), progress: { _ in })
+        let html = try String(contentsOf: out, encoding: .utf8)
+        #expect(html.contains("<meta charset=\"utf-8\">"))
+        #expect(html.contains("<title>styled</title>"))
+        #expect(html.contains("position:absolute") || html.contains("position:relative"))
+        #expect(html.contains("data:image/"))
+        let strong = try #require(html.range(of: #"<span style="[^"]*">Strong</span>"#, options: .regularExpression))
+        #expect(html[strong].contains("font-weight:bold"))
+        let plain = try #require(html.range(of: #"<span style="[^"]*">Plain\s*</span>"#, options: .regularExpression))
+        #expect(!html[plain].contains("font-weight:bold"))
+        #expect(html[plain].contains("sans-serif"))
+        #expect(html.contains("font-style:italic"))
+    }
+
     @Test func registryOffersSVG() {
         let registry = ConverterRegistry.standard(ffmpeg: nil)
         #expect(registry.targets(for: .pdf).contains(.svg))
         #expect(registry.targets(for: .ai).contains(.svg))
+        #expect(registry.targets(for: .pdf).contains(.html))
         #expect(registry.targets(for: .svg) == [.png, .pdf])
     }
 }

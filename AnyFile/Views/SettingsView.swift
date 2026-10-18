@@ -90,7 +90,7 @@ struct SettingsView: View {
                     Text(mupdfStatus)
                         .foregroundStyle(MuPDFLocator.find() == nil ? .orange : .secondary)
                 }
-                Text("MuPDF converts PDF and Illustrator files to SVG, and SVG to PNG or PDF.")
+                Text("MuPDF converts PDF and Illustrator files to SVG and HTML, and SVG to PNG or PDF.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
