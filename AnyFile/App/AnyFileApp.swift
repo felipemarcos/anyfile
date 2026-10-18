@@ -1,3 +1,4 @@
+import Sparkle
 import SwiftUI
 
 @main
@@ -15,6 +16,9 @@ struct AnyFileApp: App {
         }
         .defaultSize(width: 760, height: 520)
         .commands {
+            CommandGroup(after: .appInfo) {
+                CheckForUpdatesButton(updater: appDelegate.updaterController.updater)
+            }
             CommandGroup(replacing: .newItem) {
                 Button("Open Files…") {
                     NotificationCenter.default.post(name: .openFiles, object: nil)
@@ -36,10 +40,13 @@ struct AnyFileApp: App {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let settings: AppSettings
     let queue: ConversionQueue
+    /// Sparkle: checks the GitHub Releases appcast (SUFeedURL in AnyFile-Info.plist).
+    let updaterController: SPUStandardUpdaterController
 
     override init() {
         settings = AppSettings()
         queue = ConversionQueue(ffmpegPath: settings.ffmpegPath)
+        updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {

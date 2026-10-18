@@ -56,6 +56,11 @@ final class ConversionQueue {
         jobs.removeAll { $0.id == job.id }
     }
 
+    /// Removes these jobs, skipping any that are converting.
+    func remove(ids: Set<ConversionJob.ID>) {
+        jobs.removeAll { ids.contains($0.id) && !$0.isRunning }
+    }
+
     func clear() {
         jobs.removeAll { !$0.isRunning }
     }

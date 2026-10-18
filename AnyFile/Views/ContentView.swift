@@ -6,16 +6,24 @@ struct ContentView: View {
     @Environment(AppSettings.self) private var settings
     @State private var isTargeted = false
     @State private var isImporting = false
+    @State private var selection = Set<ConversionJob.ID>()
 
     var body: some View {
         VStack(spacing: 0) {
             if queue.jobs.isEmpty {
                 EmptyDropView(isTargeted: isTargeted) { isImporting = true }
             } else {
-                List {
+                List(selection: $selection) {
                     ForEach(queue.jobs) { job in
                         JobRow(job: job)
                     }
+                }
+                // Delete / Forward Delete (and Edit > Delete) remove the selected files.
+                .onDeleteCommand(perform: removeSelected)
+                .onKeyPress(keys: [.delete, .deleteForward]) { _ in
+                    guard !selection.isEmpty else { return .ignored }
+                    removeSelected()
+                    return .handled
                 }
                 .listStyle(.inset(alternatesRowBackgrounds: true))
                 .overlay {
@@ -41,6 +49,11 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .openFiles)) { _ in isImporting = true }
         .navigationTitle("AnyFile")
         .navigationSubtitle(queue.jobs.isEmpty ? "" : "\(queue.jobs.count) file\(queue.jobs.count == 1 ? "" : "s")")
+    }
+
+    private func removeSelected() {
+        queue.remove(ids: selection)
+        selection.removeAll()
     }
 }
 

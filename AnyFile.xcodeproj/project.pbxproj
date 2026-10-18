@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		21240378B69A09ADCD36BA0E /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = ECB6D9547D89470858B71634 /* ZIPFoundation */; };
+		C6DA91AFE35FC94135BEF3F5 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = DE10400F225B3269BF8A2EB4 /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +53,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				21240378B69A09ADCD36BA0E /* ZIPFoundation in Frameworks */,
+				C6DA91AFE35FC94135BEF3F5 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -98,6 +100,7 @@
 			name = AnyFile;
 			packageProductDependencies = (
 				ECB6D9547D89470858B71634 /* ZIPFoundation */,
+				DE10400F225B3269BF8A2EB4 /* Sparkle */,
 			);
 			productName = AnyFile;
 			productReference = 655E9B57F7C491B0475FCA32 /* AnyFile.app */;
@@ -152,6 +155,7 @@
 			mainGroup = 138E53A33F17B7E6FDB5D233;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				A0CB10CCF4200C94F5BED59A /* XCRemoteSwiftPackageReference "Sparkle" */,
 				35CBB34E516244B275020799 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -315,7 +319,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -330,6 +334,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = AnyFile.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -337,6 +342,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "AnyFile-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = AnyFile;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -344,7 +350,6 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				INFOPLIST_FILE = "AnyFile-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = com.felipemarcos.AnyFile;
 				SDKROOT = macosx;
 			};
@@ -354,6 +359,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = AnyFile.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -361,6 +367,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "AnyFile-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = AnyFile;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -368,7 +375,6 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				INFOPLIST_FILE = "AnyFile-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = com.felipemarcos.AnyFile;
 				SDKROOT = macosx;
 			};
@@ -427,7 +433,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -480,9 +486,22 @@
 				minimumVersion = 0.9.19;
 			};
 		};
+		A0CB10CCF4200C94F5BED59A /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.10.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		DE10400F225B3269BF8A2EB4 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A0CB10CCF4200C94F5BED59A /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
 		ECB6D9547D89470858B71634 /* ZIPFoundation */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 35CBB34E516244B275020799 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;

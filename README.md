@@ -2,7 +2,7 @@
 
 A SwiftUI macOS app that converts files locally. Nothing is uploaded.
 
-Drop files on the window (or the Dock icon, or use **Open With → AnyFile**), pick a target format per file or with **Set All To**, and press **Convert** (⌘↩). Output goes next to the original, or to a folder chosen in Settings. Existing files are never overwritten.
+Drop files on the window (or the Dock icon, or use **Open With → AnyFile**), pick a target format per file or with **Set All To**, and press **Convert** (⌘↩). Select files and press Delete to remove them from the list. Output goes next to the original, or to a folder chosen in Settings. Existing files are never overwritten.
 
 | Input | Output | Engine |
 |---|---|---|
@@ -35,6 +35,20 @@ The project uses Xcode's classic `project.pbxproj` file; once on Xcode 27.2+, sw
 ```sh
 xcodebuild -project AnyFile.xcodeproj -convert-project "Xcode Project"
 ```
+
+## Releasing
+
+```sh
+Scripts/release.sh 1.1.0 "Short summary"
+```
+
+This tags the current commit `v1.1.0` and pushes it. The **Release** workflow (`.github/workflows/release.yml`) then runs the tests, builds a Release app with the bundled ffmpeg, packages `AnyFile-1.1.0.dmg` (drag-to-Applications window), signs a Sparkle `appcast.xml`, and publishes both to a GitHub release with notes generated from the commits since the previous tag. The build number is the commit count, so it always increases.
+
+Installed copies find new versions through **AnyFile → Check for Updates…** (and automatic daily checks), reading `https://github.com/felipemarcos/anyfile/releases/latest/download/appcast.xml`. Updates are verified with an EdDSA key: the public half is `SUPublicEDKey` in `AnyFile-Info.plist`, the private half is in the login keychain (Sparkle account `anyfile`) and the `SPARKLE_PRIVATE_KEY` repository secret. Keep a backup: losing it means existing installs can't verify future updates.
+
+To build a release locally without publishing: `Scripts/build-release.sh 1.1.0`. Output goes to `dist/`. The DMG background is drawn by `swift Scripts/make-dmg-background.swift`.
+
+Builds are ad-hoc signed, not notarized, so the first install needs **System Settings → Privacy & Security → Open Anyway**. With an Apple Developer ID, sign and notarize in `build-release.sh`, then remove `disable-library-validation` from `AnyFile.entitlements`. The app is universal, but the bundled ffmpeg is Apple silicon only: on Intel Macs the ffmpeg formats need a Homebrew ffmpeg chosen in Settings.
 
 ## License note
 

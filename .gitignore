@@ -5,3 +5,4 @@ xcuserdata/
 *.xcuserstate
 Vendor/ffmpeg
 .build/
+dist/
