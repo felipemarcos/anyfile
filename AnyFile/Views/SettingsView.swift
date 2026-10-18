@@ -84,6 +84,16 @@ struct SettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+
+            Section("MuPDF") {
+                LabeledContent("Status") {
+                    Text(mupdfStatus)
+                        .foregroundStyle(MuPDFLocator.find() == nil ? .orange : .secondary)
+                }
+                Text("MuPDF converts PDF and Illustrator files to SVG, and SVG to PNG or PDF.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
         .frame(width: 500)
@@ -102,6 +112,13 @@ struct SettingsView: View {
         case .bundled: return "Using bundled \(version)"
         case .system(let path): return "Using \(version) at \((path as NSString).abbreviatingWithTildeInPath)"
         }
+    }
+
+    private var mupdfStatus: String {
+        guard let url = MuPDFLocator.find() else { return "Not found. SVG conversions are unavailable." }
+        return url.path.hasPrefix(Bundle.main.bundlePath)
+            ? "Bundled with AnyFile"
+            : "Using \((url.path as NSString).abbreviatingWithTildeInPath)"
     }
 
     private func setFFmpegPath(_ path: String?) {

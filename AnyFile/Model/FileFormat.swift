@@ -13,15 +13,15 @@ enum FormatCategory: String, CaseIterable, Sendable {
 /// Every file format AnyFile knows how to read or write.
 enum FileFormat: String, CaseIterable, Identifiable, Hashable, Sendable {
     // Images
-    case png, jpeg, heic, tiff, gif, bmp, webp
+    case png, jpeg, heic, tiff, gif, bmp, webp, svg
     // Video
     case mp4, mov, m4v, webm, mkv, avi
     // Audio
     case m4a, wav, aiff, caf, mp3, flac, ogg, opus, aac
     // Documents
     case txt, rtf, docx, html, odt, markdown
-    // PDF
-    case pdf
+    // PDF and vector documents
+    case pdf, ai
     // Data
     case json, plist, csv, xlsx
 
@@ -41,6 +41,7 @@ enum FileFormat: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .docx: "Word (DOCX)"
         case .odt: "OpenDocument (ODT)"
         case .xlsx: "Excel (XLSX)"
+        case .ai: "Illustrator (AI)"
         case .txt: "Plain Text"
         default: rawValue.uppercased()
         }
@@ -48,11 +49,11 @@ enum FileFormat: String, CaseIterable, Identifiable, Hashable, Sendable {
 
     var category: FormatCategory {
         switch self {
-        case .png, .jpeg, .heic, .tiff, .gif, .bmp, .webp: .image
+        case .png, .jpeg, .heic, .tiff, .gif, .bmp, .webp, .svg: .image
         case .mp4, .mov, .m4v, .webm, .mkv, .avi: .video
         case .m4a, .wav, .aiff, .caf, .mp3, .flac, .ogg, .opus, .aac: .audio
         case .txt, .rtf, .docx, .html, .odt, .markdown: .document
-        case .pdf: .pdf
+        case .pdf, .ai: .pdf
         case .json, .plist, .csv, .xlsx: .data
         }
     }
@@ -84,7 +85,10 @@ enum FileFormat: String, CaseIterable, Identifiable, Hashable, Sendable {
     }
 
     var utType: UTType? {
-        UTType(filenameExtension: fileExtension)
+        switch self {
+        case .ai: UTType("com.adobe.illustrator.ai-image") ?? UTType(filenameExtension: "ai")
+        default: UTType(filenameExtension: fileExtension)
+        }
     }
 
     /// Detects a format from a file's extension, falling back to its content type.

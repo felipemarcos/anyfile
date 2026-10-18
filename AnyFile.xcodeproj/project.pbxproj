@@ -197,14 +197,15 @@
 			);
 			inputPaths = (
 			);
-			name = "Embed ffmpeg";
+			name = "Embed tools";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "SRC=\"${PROJECT_DIR}/Vendor/ffmpeg\"\nDEST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\nif [ -x \"$SRC\" ]; then\n  cp -f \"$SRC\" \"$DEST/ffmpeg\"\n  codesign --force --options runtime --sign \"${EXPANDED_CODE_SIGN_IDENTITY:--}\" \"$DEST/ffmpeg\"\nelse\n  echo \"warning: Vendor/ffmpeg missing; run Scripts/fetch-ffmpeg.sh to bundle ffmpeg (falling back to a system ffmpeg at runtime)\"\n  rm -f \"$DEST/ffmpeg\"\nfi\n";
+			shellScript = "\"${PROJECT_DIR}/Scripts/embed-tools.sh\"
+";
 		};
 /* End PBXShellScriptBuildPhase section */
 

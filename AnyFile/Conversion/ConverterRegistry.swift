@@ -5,7 +5,7 @@ import Foundation
 struct ConverterRegistry: Sendable {
     let converters: [any Converter]
 
-    static func standard(ffmpeg: URL? = FFmpegLocator.find()) -> ConverterRegistry {
+    static func standard(ffmpeg: URL? = FFmpegLocator.find(), mutool: URL? = MuPDFLocator.find()) -> ConverterRegistry {
         var converters: [any Converter] = [
             ImageConverter(),
             AVConverter(),
@@ -13,6 +13,9 @@ struct ConverterRegistry: Sendable {
             PDFConverter(),
             DataConverter(),
         ]
+        if let mutool {
+            converters.append(MuPDFConverter(executable: mutool))
+        }
         if let ffmpeg {
             converters.append(FFmpegConverter(executable: ffmpeg))
         }

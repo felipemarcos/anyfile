@@ -44,7 +44,8 @@ final class ConversionJob: Identifiable {
         case .m4a: .mp3
         case .docx, .odt, .rtf, .html, .markdown: .pdf
         case .txt: .pdf
-        case .pdf: .png
+        case .pdf, .ai: .svg
+        case .svg: .png
         case .csv, .xlsx, .plist: .json
         case .json: .csv
         }

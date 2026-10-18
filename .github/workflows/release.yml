@@ -16,7 +16,7 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -25,13 +25,22 @@ jobs:
           xcode-version: latest-stable
 
       - name: Cache ffmpeg
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: Vendor/ffmpeg
           key: ffmpeg-${{ hashFiles('Scripts/fetch-ffmpeg.sh') }}
 
       - name: Fetch ffmpeg
         run: test -x Vendor/ffmpeg || Scripts/fetch-ffmpeg.sh
+
+      - name: Cache MuPDF
+        uses: actions/cache@v6
+        with:
+          path: Vendor/mutool
+          key: mutool-${{ runner.arch }}-${{ hashFiles('Scripts/fetch-mupdf.sh') }}
+
+      - name: Build MuPDF
+        run: test -x Vendor/mutool || Scripts/fetch-mupdf.sh
 
       - name: Test
         run: |

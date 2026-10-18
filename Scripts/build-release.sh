@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Builds a release: Release-configuration app with bundled ffmpeg, a drag-to-Applications
+# Builds a release: Release-configuration app with bundled ffmpeg and mutool, a drag-to-Applications
 # DMG, and a Sparkle appcast signed with the EdDSA update key.
 #
 # Usage: Scripts/build-release.sh <version> [build-number] [release-notes.md]
@@ -24,6 +24,7 @@ DERIVED="$ROOT/build/release"
 DIST="$ROOT/dist"
 
 [[ -x Vendor/ffmpeg ]] || Scripts/fetch-ffmpeg.sh
+[[ -x Vendor/mutool ]] || Scripts/fetch-mupdf.sh
 
 echo "Building AnyFile $VERSION ($BUILD)…"
 xcodebuild -project AnyFile.xcodeproj -scheme AnyFile -configuration Release \
@@ -33,7 +34,9 @@ xcodebuild -project AnyFile.xcodeproj -scheme AnyFile -configuration Release \
 
 APP="$DERIVED/Build/Products/Release/AnyFile.app"
 codesign --verify --deep --strict "$APP"
-[[ -x "$APP/Contents/Resources/ffmpeg" ]] || { echo "error: ffmpeg missing from the app" >&2; exit 1; }
+for TOOL in ffmpeg mutool; do
+  [[ -x "$APP/Contents/Resources/$TOOL" ]] || { echo "error: $TOOL missing from the app" >&2; exit 1; }
+done
 PLIST_VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$APP/Contents/Info.plist")
 [[ "$PLIST_VERSION" == "$VERSION" ]] || { echo "error: built version $PLIST_VERSION != $VERSION" >&2; exit 1; }
 

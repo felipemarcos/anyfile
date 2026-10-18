@@ -3,21 +3,33 @@ import Foundation
 import ImageIO
 import PDFKit
 
-/// PDF → page images (one file per page) or plain text.
+/// PDF (and PDF-compatible Illustrator files) → page images (one file per page), plain text, or PDF.
 struct PDFConverter: Converter {
     /// Render resolution for page images.
     static let dpi: CGFloat = 144
 
     func targets(for input: FileFormat) -> [FileFormat] {
-        input == .pdf ? [.png, .jpeg, .tiff, .txt] : []
+        switch input {
+        case .pdf: [.png, .jpeg, .tiff, .txt]
+        case .ai: [.pdf, .png, .jpeg, .tiff, .txt]
+        default: []
+        }
     }
 
     func convert(_ input: URL, from source: FileFormat, to target: FileFormat, output: URL, options: ConversionOptions, progress: @escaping ProgressHandler) async throws -> URL {
         guard let document = PDFDocument(url: input) else {
-            throw ConversionError("Couldn't open the PDF.")
+            throw ConversionError(source == .ai
+                ? "This Illustrator file was saved without PDF compatibility. Re-save it in Illustrator with \"Create PDF Compatible File\" on."
+                : "Couldn't open the PDF.")
         }
         if document.isLocked {
             throw ConversionError("The PDF is password-protected.")
+        }
+
+        if target == .pdf {
+            guard document.write(to: output) else { throw ConversionError("Couldn't write the PDF.") }
+            progress(1)
+            return output
         }
 
         if target == .txt {
