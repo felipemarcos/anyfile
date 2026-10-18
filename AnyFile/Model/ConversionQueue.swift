@@ -124,7 +124,7 @@ final class ConversionQueue {
         job.status = .running(0)
         let input = job.input
         let directory = outputFolder ?? input.deletingLastPathComponent()
-        let output = OutputNamer.uniqueURL(for: input, ext: target.fileExtension, in: directory)
+        let output = OutputNamer.uniqueURL(for: input, ext: target.fileExtension, suffix: target.outputNameSuffix, in: directory)
 
         let progress: ProgressHandler = { value in
             Task { @MainActor in

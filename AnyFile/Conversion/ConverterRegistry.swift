@@ -13,6 +13,7 @@ struct ConverterRegistry: Sendable {
             DocumentConverter(),
             PDFConverter(),
             DataConverter(),
+            OCRConverter(),
         ]
         if let mutool {
             converters.append(MuPDFConverter(executable: mutool))

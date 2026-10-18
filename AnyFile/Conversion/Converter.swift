@@ -11,6 +11,10 @@ struct ConversionOptions: Sendable {
     var allSheets: Bool = false
     /// Run generated SVGs through SVGO (SVGOMG's engine).
     var optimizeSVG: Bool = true
+    /// OCR language (BCP 47, e.g. "pt-BR"); nil = detect automatically.
+    var ocrLanguage: String? = nil
+    /// When extracting text from PDFs, OCR pages that have no text layer.
+    var ocrScannedPages: Bool = true
 }
 
 typealias ProgressHandler = @Sendable (Double) -> Void

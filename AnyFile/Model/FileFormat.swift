@@ -22,6 +22,8 @@ enum FileFormat: String, CaseIterable, Identifiable, Hashable, Sendable {
     case txt, rtf, docx, html, odt, markdown
     // PDF and vector documents
     case pdf, ai
+    /// Output only: a PDF with an OCR text layer.
+    case searchablePDF
     // Data
     case json, plist, csv, xlsx
 
@@ -30,6 +32,7 @@ enum FileFormat: String, CaseIterable, Identifiable, Hashable, Sendable {
     var fileExtension: String {
         switch self {
         case .jpeg: "jpg"
+        case .searchablePDF: "pdf"
         case .markdown: "md"
         default: rawValue
         }
@@ -42,6 +45,7 @@ enum FileFormat: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .odt: "OpenDocument (ODT)"
         case .xlsx: "Excel (XLSX)"
         case .ai: "Illustrator (AI)"
+        case .searchablePDF: "Searchable PDF (OCR)"
         case .txt: "Plain Text"
         default: rawValue.uppercased()
         }
@@ -53,7 +57,7 @@ enum FileFormat: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .mp4, .mov, .m4v, .webm, .mkv, .avi: .video
         case .m4a, .wav, .aiff, .caf, .mp3, .flac, .ogg, .opus, .aac: .audio
         case .txt, .rtf, .docx, .html, .odt, .markdown: .document
-        case .pdf, .ai: .pdf
+        case .pdf, .ai, .searchablePDF: .pdf
         case .json, .plist, .csv, .xlsx: .data
         }
     }
@@ -80,8 +84,14 @@ enum FileFormat: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .markdown: ["md", "markdown"]
         case .txt: ["txt", "text"]
         case .ogg: ["ogg", "oga"]
+        case .searchablePDF: [] // never detected from a file; PDFs are .pdf
         default: [fileExtension]
         }
+    }
+
+    /// Added to the output file name, so "scan.pdf" becomes "scan (OCR).pdf" rather than "scan (1).pdf".
+    var outputNameSuffix: String {
+        self == .searchablePDF ? " (OCR)" : ""
     }
 
     var utType: UTType? {

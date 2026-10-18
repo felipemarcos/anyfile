@@ -45,6 +45,7 @@ final class ConversionJob: Identifiable {
         case .docx, .odt, .rtf, .html, .markdown: .pdf
         case .txt: .pdf
         case .pdf, .ai: .svg
+        case .searchablePDF: nil
         case .svg: .png
         case .csv, .xlsx, .plist: .json
         case .json: .csv

@@ -27,6 +27,15 @@ final class AppSettings {
         (300, "Print (300 dpi)"), (600, "High (600 dpi)"),
     ]
 
+    /// OCR language code, or nil for automatic detection.
+    var ocrLanguage: String? {
+        didSet { defaults.set(ocrLanguage, forKey: Keys.ocrLanguage) }
+    }
+
+    var ocrScannedPages: Bool {
+        didSet { defaults.set(ocrScannedPages, forKey: Keys.ocrScannedPages) }
+    }
+
     var allSheets: Bool {
         didSet { defaults.set(allSheets, forKey: Keys.allSheets) }
     }
@@ -45,19 +54,24 @@ final class AppSettings {
         outputFolder = defaults.string(forKey: Keys.outputFolder).map { URL(fileURLWithPath: $0, isDirectory: true) }
         imageQuality = defaults.object(forKey: Keys.imageQuality) as? Double ?? 0.85
         allSheets = defaults.bool(forKey: Keys.allSheets)
+        ocrLanguage = defaults.string(forKey: Keys.ocrLanguage)
+        ocrScannedPages = defaults.object(forKey: Keys.ocrScannedPages) as? Bool ?? true
         renderDPI = defaults.object(forKey: Keys.renderDPI) as? Double ?? 144
         ffmpegPath = defaults.string(forKey: Keys.ffmpegPath)
         optimizeSVG = defaults.object(forKey: Keys.optimizeSVG) as? Bool ?? true
     }
 
     var options: ConversionOptions {
-        ConversionOptions(imageQuality: imageQuality, renderDPI: renderDPI, allSheets: allSheets, optimizeSVG: optimizeSVG)
+        ConversionOptions(imageQuality: imageQuality, renderDPI: renderDPI, allSheets: allSheets, optimizeSVG: optimizeSVG,
+                          ocrLanguage: ocrLanguage, ocrScannedPages: ocrScannedPages)
     }
 
     private enum Keys {
         static let outputFolder = "outputFolder"
         static let imageQuality = "imageQuality"
         static let allSheets = "allSheets"
+        static let ocrLanguage = "ocrLanguage"
+        static let ocrScannedPages = "ocrScannedPages"
         static let renderDPI = "renderDPI"
         static let ffmpegPath = "ffmpegPath"
         static let optimizeSVG = "optimizeSVG"

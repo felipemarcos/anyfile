@@ -54,6 +54,20 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
 
+            Section("Text recognition (OCR)") {
+                Picker("Language", selection: $settings.ocrLanguage) {
+                    Text("Automatic").tag(String?.none)
+                    Divider()
+                    ForEach(ocrLanguages, id: \.code) { language in
+                        Text(language.name).tag(Optional(language.code))
+                    }
+                }
+                Toggle("Recognize scanned pages when extracting text from PDFs", isOn: $settings.ocrScannedPages)
+                Text("Convert a PDF or image to \u{201C}Searchable PDF (OCR)\u{201D} to make its text selectable and searchable. Recognition runs on this Mac with Apple\u{2019}s Vision framework.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Section("Excel") {
                 Toggle("Export every sheet when converting to JSON", isOn: $settings.allSheets)
                 Text("When on, the JSON is an object keyed by sheet name. CSV always uses the first sheet.")
@@ -121,6 +135,13 @@ struct SettingsView: View {
         case .bundled: return "Using bundled \(version)"
         case .system(let path): return "Using \(version) at \((path as NSString).abbreviatingWithTildeInPath)"
         }
+    }
+
+    /// Vision's languages with readable names, sorted by name.
+    private var ocrLanguages: [(code: String, name: String)] {
+        TextRecognizer.supportedLanguages
+            .map { (code: $0, name: Locale.current.localizedString(forIdentifier: $0) ?? $0) }
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 
     private var mupdfStatus: String {

@@ -30,9 +30,20 @@ struct PDFConverter: Converter {
         }
 
         if target == .txt {
-            let text = document.string ?? ""
-            try Data(text.utf8).write(to: output, options: .atomic)
-            progress(1)
+            // Pages without a text layer (scans) are OCRed when the setting allows it.
+            var pages: [String] = []
+            for index in 0..<document.pageCount {
+                try Task.checkCancellation()
+                guard let page = document.page(at: index) else { continue }
+                if options.ocrScannedPages && TextRecognizer.needsOCR(page) {
+                    pages.append(TextRecognizer.text(of: try TextRecognizer.recognize(page, language: options.ocrLanguage)))
+                } else {
+                    pages.append(page.string ?? "")
+                }
+                progress(Double(index + 1) / Double(max(document.pageCount, 1)))
+            }
+            // Form feed between pages, as pdftotext does.
+            try Data(pages.joined(separator: "\n\u{0C}").utf8).write(to: output, options: .atomic)
             return output
         }
 
@@ -73,11 +84,24 @@ struct PDFConverter: Converter {
         return folder ?? output
     }
 
-    static func render(_ page: PDFPage, dpi: Double, flattenOnWhite: Bool) throws -> CGImage {
+    /// The page's size as displayed, in points: its media box with the page rotation applied.
+    static func displaySize(of page: PDFPage) -> CGSize {
         let bounds = page.bounds(for: .mediaBox)
+        let quarterTurns = ((page.rotation % 360) + 360) % 360 / 90
+        return quarterTurns % 2 == 1 ? CGSize(width: bounds.height, height: bounds.width) : bounds.size
+    }
+
+    /// Draws the page upright into a context sized `displaySize(of:)`. PDFKit applies the
+    /// rotation and media-box origin itself.
+    static func drawUpright(_ page: PDFPage, in ctx: CGContext) {
+        page.draw(with: .mediaBox, to: ctx)
+    }
+
+    static func render(_ page: PDFPage, dpi: Double, flattenOnWhite: Bool) throws -> CGImage {
+        let size = displaySize(of: page)
         let scale = CGFloat(dpi / 72)
-        let width = Int((bounds.width * scale).rounded())
-        let height = Int((bounds.height * scale).rounded())
+        let width = Int((size.width * scale).rounded())
+        let height = Int((size.height * scale).rounded())
         guard width > 0, height > 0, let context = CGContext(
             data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
             space: CGColorSpace(name: CGColorSpace.sRGB)!,
@@ -88,7 +112,7 @@ struct PDFConverter: Converter {
             context.fill(CGRect(x: 0, y: 0, width: width, height: height))
         }
         context.scaleBy(x: scale, y: scale)
-        page.draw(with: .mediaBox, to: context)
+        drawUpright(page, in: context)
         guard let image = context.makeImage() else { throw ConversionError("Couldn't render the page.") }
         return image
     }
