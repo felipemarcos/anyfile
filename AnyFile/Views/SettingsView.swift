@@ -44,6 +44,14 @@ struct SettingsView: View {
                             .frame(width: 40, alignment: .trailing)
                     }
                 }
+                Picker("Render resolution", selection: $settings.renderDPI) {
+                    ForEach(AppSettings.renderDPIPresets, id: \.0) { dpi, label in
+                        Text(label).tag(dpi)
+                    }
+                }
+                Text("Pixel size when PDF pages, Illustrator files and SVGs become PNG, JPEG or other images. A US Letter page at 2× is 1224 × 1584 px; at 600 dpi it's 5100 × 6600 px.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Section("Excel") {

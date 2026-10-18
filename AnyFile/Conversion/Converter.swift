@@ -4,6 +4,9 @@ import Foundation
 struct ConversionOptions: Sendable {
     /// Lossy image quality, 0...1 (JPEG, HEIC).
     var imageQuality: Double = 0.85
+    /// Pixel density when vector sources (PDF pages, Illustrator, SVG) become raster images.
+    /// 72 dpi = 1 pixel per point.
+    var renderDPI: Double = 144
     /// When converting XLSX to JSON, export every sheet keyed by sheet name instead of only the first.
     var allSheets: Bool = false
     /// Run generated SVGs through SVGO (SVGOMG's engine).

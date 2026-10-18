@@ -5,9 +5,6 @@ import PDFKit
 
 /// PDF (and PDF-compatible Illustrator files) → page images (one file per page), plain text, or PDF.
 struct PDFConverter: Converter {
-    /// Render resolution for page images.
-    static let dpi: CGFloat = 144
-
     func targets(for input: FileFormat) -> [FileFormat] {
         switch input {
         case .pdf: [.png, .jpeg, .tiff, .txt]
@@ -58,7 +55,7 @@ struct PDFConverter: Converter {
             for index in 0..<pageCount {
                 try Task.checkCancellation()
                 guard let page = document.page(at: index) else { continue }
-                let image = try Self.render(page, flattenOnWhite: true)
+                let image = try Self.render(page, dpi: options.renderDPI, flattenOnWhite: true)
                 let pageURL: URL
                 if let folder {
                     let number = String(index + 1).leftPadded(to: digits)
@@ -66,7 +63,7 @@ struct PDFConverter: Converter {
                 } else {
                     pageURL = output
                 }
-                try Self.write(image, as: target, to: pageURL, quality: options.imageQuality)
+                try Self.write(image, as: target, to: pageURL, quality: options.imageQuality, dpi: options.renderDPI)
                 progress(Double(index + 1) / Double(pageCount))
             }
         } catch {
@@ -76,9 +73,9 @@ struct PDFConverter: Converter {
         return folder ?? output
     }
 
-    static func render(_ page: PDFPage, flattenOnWhite: Bool) throws -> CGImage {
+    static func render(_ page: PDFPage, dpi: Double, flattenOnWhite: Bool) throws -> CGImage {
         let bounds = page.bounds(for: .mediaBox)
-        let scale = dpi / 72
+        let scale = CGFloat(dpi / 72)
         let width = Int((bounds.width * scale).rounded())
         let height = Int((bounds.height * scale).rounded())
         guard width > 0, height > 0, let context = CGContext(
@@ -96,12 +93,17 @@ struct PDFConverter: Converter {
         return image
     }
 
-    static func write(_ image: CGImage, as format: FileFormat, to url: URL, quality: Double) throws {
+    /// Writes a rendered image, recording `dpi` so it keeps its physical size when printed or placed.
+    static func write(_ image: CGImage, as format: FileFormat, to url: URL, quality: Double, dpi: Double) throws {
         guard let type = ImageConverter.utType(for: format),
               let destination = CGImageDestinationCreateWithURL(url as CFURL, type.identifier as CFString, 1, nil) else {
             throw ConversionError("Can't write \(format.displayName).")
         }
-        let properties: [CFString: Any] = [kCGImageDestinationLossyCompressionQuality: quality]
+        let properties: [CFString: Any] = [
+            kCGImageDestinationLossyCompressionQuality: quality,
+            kCGImagePropertyDPIWidth: dpi,
+            kCGImagePropertyDPIHeight: dpi,
+        ]
         CGImageDestinationAddImage(destination, image, properties as CFDictionary)
         guard CGImageDestinationFinalize(destination) else {
             throw ConversionError("Couldn't write the image.")

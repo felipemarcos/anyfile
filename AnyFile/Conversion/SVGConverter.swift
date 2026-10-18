@@ -4,9 +4,6 @@ import Foundation
 /// SVG → raster images or vector PDF, rendered by macOS's own SVG engine (via NSImage).
 /// MuPDF's SVG reader drops clip paths on gradients, so it isn't used for this direction.
 struct SVGConverter: Converter {
-    /// Raster output is rendered at 2× the SVG's size (like 144 dpi for PDF pages).
-    static let scale: CGFloat = 2
-
     func targets(for input: FileFormat) -> [FileFormat] {
         input == .svg ? [.png, .jpeg, .heic, .tiff, .gif, .bmp, .pdf] : []
     }
@@ -28,8 +25,10 @@ struct SVGConverter: Converter {
             ctx.endPDFPage()
             ctx.closePDF()
         } else {
-            let width = Int((size.width * Self.scale).rounded())
-            let height = Int((size.height * Self.scale).rounded())
+            // SVG user units are treated as points, so 144 dpi renders at 2×.
+            let scale = CGFloat(options.renderDPI / 72)
+            let width = max(1, Int((size.width * scale).rounded()))
+            let height = max(1, Int((size.height * scale).rounded()))
             guard let ctx = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
                                       space: CGColorSpace(name: CGColorSpace.sRGB)!,
                                       bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
@@ -40,10 +39,10 @@ struct SVGConverter: Converter {
                 ctx.setFillColor(CGColor(gray: 1, alpha: 1))
                 ctx.fill(CGRect(x: 0, y: 0, width: width, height: height))
             }
-            ctx.scaleBy(x: Self.scale, y: Self.scale)
+            ctx.scaleBy(x: scale, y: scale)
             draw(image, in: ctx, size: size)
             guard let rendered = ctx.makeImage() else { throw ConversionError("Couldn't render the SVG.") }
-            try PDFConverter.write(rendered, as: target, to: output, quality: options.imageQuality)
+            try PDFConverter.write(rendered, as: target, to: output, quality: options.imageQuality, dpi: options.renderDPI)
         }
         progress(1)
         return output
