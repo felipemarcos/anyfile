@@ -35,7 +35,7 @@ struct MuPDFConverter: Converter {
         case (.svg, .pdf):
             try await run(["convert", "-o", output.path, input.path])
         case (.pdf, .svg), (.ai, .svg):
-            return try await writeSVG(input, from: source, output: output, progress: progress)
+            return try await writeSVG(input, from: source, output: output, optimize: options.optimizeSVG, progress: progress)
         case (.pdf, .html), (.ai, .html):
             try await writeHTML(input, from: source, output: output, progress: progress)
         default:
@@ -47,7 +47,7 @@ struct MuPDFConverter: Converter {
 
     /// One SVG per page; several pages go into a folder named after the input.
     /// Text becomes outlines so the SVG looks the same without the document's fonts.
-    private func writeSVG(_ input: URL, from source: FileFormat, output: URL, progress: @escaping ProgressHandler) async throws -> URL {
+    private func writeSVG(_ input: URL, from source: FileFormat, output: URL, optimize: Bool, progress: @escaping ProgressHandler) async throws -> URL {
         guard let pageCount = PDFDocument(url: input)?.pageCount, pageCount > 0 else {
             throw ConversionError(source == .ai
                 ? "This Illustrator file was saved without PDF compatibility. Re-save it in Illustrator with \"Create PDF Compatible File\" on."
@@ -56,6 +56,7 @@ struct MuPDFConverter: Converter {
         let svgArgs = ["draw", "-q", "-F", "svg", "-O", "text=path"]
         if pageCount == 1 {
             try await run(svgArgs + ["-o", output.path, input.path, "1"])
+            if optimize { try await SVGOptimizer.shared.optimizeFile(at: output) }
             progress(1)
             return output
         }
@@ -70,6 +71,7 @@ struct MuPDFConverter: Converter {
                 let number = String(repeating: "0", count: digits - String(page).count) + String(page)
                 let pageURL = folder.appendingPathComponent("\(base)-\(number).svg")
                 try await run(svgArgs + ["-o", pageURL.path, input.path, String(page)])
+                if optimize { try await SVGOptimizer.shared.optimizeFile(at: pageURL) }
                 progress(Double(page) / Double(pageCount))
             }
         } catch {

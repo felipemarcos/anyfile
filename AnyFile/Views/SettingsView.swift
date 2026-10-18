@@ -90,7 +90,8 @@ struct SettingsView: View {
                     Text(mupdfStatus)
                         .foregroundStyle(MuPDFLocator.find() == nil ? .orange : .secondary)
                 }
-                Text("MuPDF converts PDF and Illustrator files to SVG and HTML, and SVG to PNG or PDF.")
+                Toggle("Optimize SVG output with SVGO", isOn: $settings.optimizeSVG)
+                Text("MuPDF converts PDF and Illustrator files to SVG and HTML, and SVG to PNG or PDF. SVGO, the engine behind SVGOMG, then shrinks each SVG on this Mac with SVGOMG's default settings.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

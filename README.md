@@ -13,13 +13,13 @@ Drop files on the window (or the Dock icon, or use **Open With → AnyFile**), p
 | Audio incl. FLAC, OGG, Opus | MP3, M4A, AAC, WAV, AIFF, CAF, FLAC, OGG, Opus | ffmpeg |
 | TXT, RTF, DOCX, HTML, ODT, Markdown | TXT, RTF, DOCX, HTML, ODT, PDF | NSAttributedString |
 | PDF | PNG, JPEG, TIFF (one file per page), TXT | PDFKit |
-| PDF, Illustrator (.ai) | SVG (one per page, text as outlines) | MuPDF |
+| PDF, Illustrator (.ai) | SVG (one per page, text as outlines, optimized with SVGO) | MuPDF + SVGO |
 | PDF, Illustrator (.ai) | HTML (one file, page layout kept, images embedded) | MuPDF |
 | Illustrator (.ai) | PDF, PNG, JPEG, TIFF, TXT | PDFKit |
 | SVG | PNG, PDF | MuPDF |
 | CSV ↔ JSON ↔ Excel (XLSX), JSON ↔ plist | | built in (+ ZIPFoundation) |
 
-PDF → HTML keeps each page's layout (positioned text, colors, embedded images) rather than producing reflowable text; bold and italic are restored from MuPDF's structured text, since its HTML writer drops them. Illustrator files need Illustrator's default "Create PDF Compatible File" option; older PostScript-based .ai files are rejected with an explanation.
+Generated SVGs go through [SVGO](https://github.com/svg/svgo) 4.1.0, the engine behind SVGOMG, with SVGOMG's defaults (default preset, multipass, 3-digit precision). It runs locally in JavaScriptCore from the unmodified browser build in `AnyFile/Resources`; turn it off in Settings. PDF → HTML keeps each page's layout (positioned text, colors, embedded images) rather than producing reflowable text; bold and italic are restored from MuPDF's structured text, since its HTML writer drops them. Illustrator files need Illustrator's default "Create PDF Compatible File" option; older PostScript-based .ai files are rejected with an explanation.
 
 Data notes: JSON key order becomes column order; CSV columns are typed only when every value converts losslessly (so `01234` stays a string); Excel dates become ISO 8601 strings; legacy `.xls` isn't supported.
 
@@ -63,5 +63,7 @@ The app bundles two separately licensed command-line tools, run as separate proc
 
 - **ffmpeg**: a static GPL build from [ffmpeg.martin-riedl.de](https://ffmpeg.martin-riedl.de) ([source](https://ffmpeg.org/download.html)).
 - **mutool**: built from unmodified [MuPDF](https://mupdf.com) source, AGPL-3.0 ([source](https://mupdf.com/releases)).
+
+It also includes SVGO's browser build (MIT, `AnyFile/Resources/svgo-LICENSE.txt`).
 
 Distributing the DMG means passing those licenses on and pointing to the corresponding source, which these links do.

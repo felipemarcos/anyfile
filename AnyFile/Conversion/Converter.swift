@@ -6,6 +6,8 @@ struct ConversionOptions: Sendable {
     var imageQuality: Double = 0.85
     /// When converting XLSX to JSON, export every sheet keyed by sheet name instead of only the first.
     var allSheets: Bool = false
+    /// Run generated SVGs through SVGO (SVGOMG's engine).
+    var optimizeSVG: Bool = true
 }
 
 typealias ProgressHandler = @Sendable (Double) -> Void

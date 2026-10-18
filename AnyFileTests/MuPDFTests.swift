@@ -44,6 +44,20 @@ struct MuPDFTests {
         #expect(svg.contains("<path")) // rectangle and text outlines
     }
 
+    @Test func svgOutputIsOptimizedUnlessTurnedOff() async throws {
+        let pdf = try makePDF("opt.pdf", pages: 1)
+        let raw = dir.appendingPathComponent("raw.svg")
+        let optimized = dir.appendingPathComponent("optimized.svg")
+        _ = try await converter.convert(pdf, from: .pdf, to: .svg, output: raw, options: .init(optimizeSVG: false), progress: { _ in })
+        _ = try await converter.convert(pdf, from: .pdf, to: .svg, output: optimized, options: .init(optimizeSVG: true), progress: { _ in })
+        let rawSize = try Data(contentsOf: raw).count
+        let optimizedSize = try Data(contentsOf: optimized).count
+        #expect(optimizedSize < rawSize)
+        let svg = try String(contentsOf: optimized, encoding: .utf8)
+        #expect(svg.contains("viewBox=\"0 0 300 200\""))
+        #expect(!svg.contains("xmlns:inkscape"))
+    }
+
     @Test func multiPagePDFMakesAFolder() async throws {
         let pdf = try makePDF("deck.pdf", pages: 3)
         let out = dir.appendingPathComponent("deck.svg")

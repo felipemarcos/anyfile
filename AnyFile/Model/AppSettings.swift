@@ -20,6 +20,10 @@ final class AppSettings {
         didSet { defaults.set(allSheets, forKey: Keys.allSheets) }
     }
 
+    var optimizeSVG: Bool {
+        didSet { defaults.set(optimizeSVG, forKey: Keys.optimizeSVG) }
+    }
+
     /// nil = automatic (bundled, then Homebrew/MacPorts).
     var ffmpegPath: String? {
         didSet { defaults.set(ffmpegPath, forKey: Keys.ffmpegPath) }
@@ -31,10 +35,11 @@ final class AppSettings {
         imageQuality = defaults.object(forKey: Keys.imageQuality) as? Double ?? 0.85
         allSheets = defaults.bool(forKey: Keys.allSheets)
         ffmpegPath = defaults.string(forKey: Keys.ffmpegPath)
+        optimizeSVG = defaults.object(forKey: Keys.optimizeSVG) as? Bool ?? true
     }
 
     var options: ConversionOptions {
-        ConversionOptions(imageQuality: imageQuality, allSheets: allSheets)
+        ConversionOptions(imageQuality: imageQuality, allSheets: allSheets, optimizeSVG: optimizeSVG)
     }
 
     private enum Keys {
@@ -42,5 +47,6 @@ final class AppSettings {
         static let imageQuality = "imageQuality"
         static let allSheets = "allSheets"
         static let ffmpegPath = "ffmpegPath"
+        static let optimizeSVG = "optimizeSVG"
     }
 }
