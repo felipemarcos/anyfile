@@ -16,7 +16,7 @@ Drop files on the window (or the Dock icon, or use **Open With → AnyFile**), p
 | PDF, Illustrator (.ai) | SVG (one per page, text as outlines, optimized with SVGO) | MuPDF + SVGO |
 | PDF, Illustrator (.ai) | HTML (one file, page layout kept, images embedded) | MuPDF |
 | Illustrator (.ai) | PDF, PNG, JPEG, TIFF, TXT | PDFKit |
-| SVG | PNG, PDF | MuPDF |
+| SVG | PNG, JPEG, HEIC, TIFF, GIF, BMP, PDF (vector) | macOS (CoreSVG) |
 | CSV ↔ JSON ↔ Excel (XLSX), JSON ↔ plist | | built in (+ ZIPFoundation) |
 
 Generated SVGs go through [SVGO](https://github.com/svg/svgo) 4.1.0, the engine behind SVGOMG, with SVGOMG's defaults (default preset, multipass, 3-digit precision). It runs locally in JavaScriptCore from the unmodified browser build in `AnyFile/Resources`; turn it off in Settings. PDF → HTML keeps each page's layout (positioned text, colors, embedded images) rather than producing reflowable text; bold and italic are restored from MuPDF's structured text, since its HTML writer drops them. Illustrator files need Illustrator's default "Create PDF Compatible File" option; older PostScript-based .ai files are rejected with an explanation.

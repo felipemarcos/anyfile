@@ -91,18 +91,6 @@ struct MuPDFTests {
         }
     }
 
-    @Test func svgToPNGAndPDF() async throws {
-        let svg = dir.appendingPathComponent("shape.svg")
-        try Data(##"<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"><rect width="100" height="50" fill="#6c4cf0"/></svg>"##.utf8).write(to: svg)
-        let png = dir.appendingPathComponent("shape.png")
-        let pdf = dir.appendingPathComponent("shape.pdf")
-        _ = try await converter.convert(svg, from: .svg, to: .png, output: png, options: .init(), progress: { _ in })
-        _ = try await converter.convert(svg, from: .svg, to: .pdf, output: pdf, options: .init(), progress: { _ in })
-        let image = try #require(NSImage(contentsOf: png)?.cgImage(forProposedRect: nil, context: nil, hints: nil))
-        #expect(image.width == 200 && image.height == 100) // 144 dpi
-        #expect(PDFDocument(url: pdf)?.pageCount == 1)
-    }
-
     @Test func pdfToHTMLKeepsLayoutBoldAndImages() async throws {
         let url = dir.appendingPathComponent("styled.pdf")
         var box = CGRect(x: 0, y: 0, width: 400, height: 300)
@@ -144,6 +132,6 @@ struct MuPDFTests {
         #expect(registry.targets(for: .pdf).contains(.svg))
         #expect(registry.targets(for: .ai).contains(.svg))
         #expect(registry.targets(for: .pdf).contains(.html))
-        #expect(registry.targets(for: .svg) == [.png, .pdf])
+        #expect(registry.converter(from: .svg, to: .png) is SVGConverter)
     }
 }

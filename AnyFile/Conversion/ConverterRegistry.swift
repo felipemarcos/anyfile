@@ -8,6 +8,7 @@ struct ConverterRegistry: Sendable {
     static func standard(ffmpeg: URL? = FFmpegLocator.find(), mutool: URL? = MuPDFLocator.find()) -> ConverterRegistry {
         var converters: [any Converter] = [
             ImageConverter(),
+            SVGConverter(),
             AVConverter(),
             DocumentConverter(),
             PDFConverter(),

@@ -16,24 +16,19 @@ enum MuPDFLocator {
     }
 }
 
-/// Conversion with MuPDF's mutool: PDF/Illustrator → SVG or HTML, and SVG → PNG/PDF.
+/// Conversion with MuPDF's mutool: PDF/Illustrator → SVG or HTML.
 struct MuPDFConverter: Converter {
     let executable: URL
 
     func targets(for input: FileFormat) -> [FileFormat] {
         switch input {
         case .pdf, .ai: [.svg, .html]
-        case .svg: [.png, .pdf]
         default: []
         }
     }
 
     func convert(_ input: URL, from source: FileFormat, to target: FileFormat, output: URL, options: ConversionOptions, progress: @escaping ProgressHandler) async throws -> URL {
         switch (source, target) {
-        case (.svg, .png):
-            try await run(["draw", "-q", "-r", "144", "-o", output.path, input.path])
-        case (.svg, .pdf):
-            try await run(["convert", "-o", output.path, input.path])
         case (.pdf, .svg), (.ai, .svg):
             return try await writeSVG(input, from: source, output: output, optimize: options.optimizeSVG, progress: progress)
         case (.pdf, .html), (.ai, .html):
